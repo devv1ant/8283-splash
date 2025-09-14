@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>SCP-8283 Access Portal</title>
 <link rel="icon" href="https://kaktuskontainer.wdfiles.com/local--files/format-hell/scp_trans.png" type="image/png">
 <style>
 
-body {
+  body {
   margin: 0;
   font-family: "Courier New", monospace;
   background-color: #fbfbfa;
@@ -26,7 +26,6 @@ body {
   overflow: hidden;
 }
 
-
 body::after {
   content: "";
   position: fixed;
@@ -44,8 +43,7 @@ body::after {
   opacity: 0.25;
 }
 
-
-.screen {
+ .screen {
   max-width: 640px;
   width: 85%;
   background: rgba(255,255,255,0.95);
@@ -60,7 +58,6 @@ body::after {
 }
 .screen.active { display: block; opacity: 1; }
 
-
 .warning {
   border: 3px solid #800000;
   padding: 20px;
@@ -70,7 +67,6 @@ body::after {
   margin-bottom: 30px;
   line-height: 1.6;
 }
-
 
 .btn {
   border: 2px solid #800000;
@@ -85,166 +81,181 @@ body::after {
 }
 .btn:hover { background: #800000; color: white; }
 
+  .spinner {
+    width:44px;height:44px;margin:14px auto;border-radius:50%;
+    border:5px solid rgba(128,0,0,0.25); border-top:5px solid #800000;
+    animation:spin 1s linear infinite;
+  }
+  @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
 
-.spinner {
-  width: 44px;
-  height: 44px;
-  margin: 20px auto;
-  border-radius: 50%;
-  border: 5px solid rgba(128,0,0,0.3);
-  border-top: 5px solid #800000;
-  animation: spin 1s linear infinite;
-}
-@keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
+  .progress{ width:100%; height:12px; background:#eee; border-radius:6px; overflow:hidden; margin:14px 0 12px 0;}
+  .progress-bar{ width:0%; height:100%; background:#800000; transition:width 0.25s linear; border-radius:6px; }
 
+  .log {
+    position:relative;
+    height:200px;
+    margin:0 auto 8px;
+    font-size:14px;
+    overflow:hidden;
+    padding-top:14px;
+    box-sizing:border-box;
+  }
+  .lines {
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    align-items:flex-start;
+    gap:8px;
+    padding:4px 12px 28px 12px;
+    box-sizing:border-box;
+  }
+  .line {
+    margin:0;
+    white-space:nowrap;
+    opacity:0;
+    transform:translateY(6px);
+    transition:opacity 140ms ease, transform 140ms ease;
+  }
+  .line.show { opacity:1; transform:none; }
 
-.progress {
-  width: 100%;
-  height: 12px;
-  background: #eee;
-  border-radius: 6px;
-  overflow: hidden;
-  margin: 20px 0;
-}
-.progress-bar {
-  width: 0%;
-  height: 100%;
-  background: #800000;
-  transition: width 0.25s linear;
-}
+  .prompt {
+    position:absolute;
+    bottom:6px;
+    left:12px;
+    font-weight:bold;
+  }
+  .prompt .caret {
+    display:inline-block;
+    margin-left:6px;
+    animation:blink 1s step-start infinite;
+  }
+  @keyframes blink { 50%{opacity:0} }
 
+  .system{ color:#800000; font-weight:bold; }
+  .security{ color:#000; font-weight:bold; }
+  .alert{ color:red; font-weight:bold; }
+  .complete{ color:#800000; font-weight:bold; margin-left:8px; }
 
-.log {
-  text-align: left;
-  max-width: 100%;
-  height: 180px;
-  margin: 0 auto;
-  font-size: 14px;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  flex-direction: column-reverse; 
-}
-.line {
-  opacity: 0;
-  margin: 0;
-  white-space: nowrap;
-  transition: opacity 0.5s ease;
-}
-.line.visible { opacity: 1; }
-.system { color: #800000; font-weight: bold; }
-.security { color: #000; font-weight: bold; }
-.alert { color: red; font-weight: bold; }
-.complete { color: #800000; font-weight: bold; }
-.typing::after { content: "|"; animation: blink 1s step-start infinite; }
-@keyframes blink { 50% {opacity: 0;} }
-
-
-.open-link {
-  display:none;
-  margin-top:20px;
-}
+  .open-link-container {
+    display:flex;
+    justify-content:center;
+    margin-top:20px;
+  }
+  .open-link { display:none; }
 </style>
 </head>
 <body>
 
-
-<div class="screen active" id="screen1">
-  <div class="warning">
-    SCP FOUNDATION SECURE PORTAL<br><br>
-    ITEM #: SCP-8283<br>
-    CLEARANCE LEVEL 4/8283 REQUIRED<br><br>
-    UNAUTHORISED ACCESS WILL BE LOGGED AND FORWARDED TO RELEVANT DEPARTMENT ADMINISTRATIVES.
+  <div class="screen active" id="screen1">
+    <div class="warning">
+      FOUNDATION SECURE PORTAL<br>
+      <hr>
+      ITEM #: SCP-8283<br>
+      CLEARANCE LEVEL 4/8283 REQUIRED<br><br>
+      UNAUTHORISED ACCESS WILL BE LOGGED AND FORWARDED TO RELEVANT DEPARTMENT ADMINISTRATIVES.
+    </div>
+    <button class="btn" id="loginBtn"> > LOGIN < </button>
   </div>
-  <button class="btn" id="loginBtn">>> LOGIN <<</button>
-</div>
 
+  <div class="screen" id="screen2">
+    <div class="spinner" id="spinner"></div>
+    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
 
-<div class="screen" id="screen2">
-  <div class="spinner" id="spinner"></div>
-  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-  <div class="log" id="logArea">
-    <p class="line"><span class="system">[SYSTEM]</span> Establishing secure channel...</p>
-    <p class="line"><span class="system">[SYSTEM]</span> Initiating credential handshake...</p>
-    <p class="line"><span class="system">[SYSTEM]</span> Checking credentials... [REDACTED]</p>
-    <p class="line"><span class="security">[SECURITY]</span> User identity hash confirmed.</p>
-    <p class="line"><span class="system">[SYSTEM]</span> Verifying clearance level...</p>
-    <p class="line"><span class="security">[SECURITY]</span> Clearance Level 4 confirmed.</p>
-    <p class="line"><span class="system">[SYSTEM]</span> Multi-factor authentication passed.</p>
-    <p class="line"><span class="system">[SYSTEM]</span> Integrity checksum... [DATA EXPUNGED]</p>
-    <p class="line"><span class="system">[SYSTEM]</span> Decrypting file headers...</p>
-    <p class="line"><span class="system">[SYSTEM]</span> Parsing anomaly index...</p>
-    <p class="line"><span class="system">[SYSTEM]</span> SCP-8283 access confirmed.</p>
-    <p class="line"><span class="system">[SYSTEM]</span> Preparing document payload...</p>
-    <p class="line"><span class="alert">[ALERT]</span> Unauthorized redistribution may trigger Kronos Protocol.</p>
-    <p class="line"><span class="system">[SYSTEM]</span> File ready. Access channel stable.</p>
+    <div class="log" id="logArea">
+      <div class="lines" id="lines"></div>
+      <div class="prompt" id="prompt">&gt;<span id="promptText"></span><span class="caret">|</span></div>
+    </div>
+
+    <div class="open-link-container">
+      <a class="btn open-link" id="openLink" href="https://scp-sandbox-3.wikidot.com/scp-8283-atlas">> ACCESS FILE <</a>
+    </div>
   </div>
-  <a class="btn open-link" id="openLink" href="https://scp-sandbox-3.wikidot.com/scp-8283-atlas">>> ACCESS FILE <<</a>
-</div>
 
 <script>
+const MAX_LOGS = 12;
+const CHAR_DELAY = 45;
+const BETWEEN_MIN = 520;
+const BETWEEN_MAX = 920;
+
+const logs = [
+  { prefix: '<span class="system">[SYSTEM]</span>', text: ' Establishing secure channel...' },
+  { prefix: '<span class="system">[SYSTEM]</span>', text: ' Initiating credential handshake...' },
+  { prefix: '<span class="system">[SYSTEM]</span>', text: ' Checking credentials...[REDACTED]' },
+  { prefix: '<span class="security">[SECURITY]</span>', text: ' User identity hash confirmed.' },
+  { prefix: '<span class="system">[SYSTEM]</span>', text: ' Verifying clearance level...' },
+  { prefix: '<span class="security">[SECURITY]</span>', text: ' Clearance Level 4 confirmed.' },
+  { prefix: '<span class="system">[SYSTEM]</span>', text: ' Multi-factor authentication passed.' },
+  { prefix: '<span class="system">[SYSTEM]</span>', text: ' Integrity checksum...[DATA EXPUNGED]' },
+  { prefix: '<span class="system">[SYSTEM]</span>', text: ' Decrypting file headers...' },
+  { prefix: '<span class="system">[SYSTEM]</span>', text: ' Parsing anomaly index...' },
+  { prefix: '<span class="system">[SYSTEM]</span>', text: ' SCP-8283 access confirmed.' },
+  { prefix: '<span class="system">[SYSTEM]</span>', text: ' Preparing document payload...' },
+  { prefix: '<span class="alert">[ALERT]</span>', text: ' Unauthorized redistribution may trigger Kronos Protocol.' },
+  { prefix: '<span class="system">[SYSTEM]</span>', text: ' File ready. Access channel stable.' }
+];
+
 const loginBtn = document.getElementById('loginBtn');
 const screen1 = document.getElementById('screen1');
 const screen2 = document.getElementById('screen2');
 const progressBar = document.getElementById('progressBar');
 const spinner = document.getElementById('spinner');
-const logLines = Array.from(document.querySelectorAll('.log .line'));
+const linesContainer = document.getElementById('lines');
 const openLink = document.getElementById('openLink');
+const prompt = document.getElementById('prompt');
+const promptText = document.getElementById('promptText');
 
-loginBtn.addEventListener('click', () => {
-  screen1.style.opacity = 0;
-  setTimeout(() => {
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+function randBetween(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+let finishedLines = 0;
+
+async function typeLine(entry){
+  promptText.textContent = '';
+  for (let i=0;i<entry.text.length;i++){
+    promptText.textContent = entry.text.slice(0,i+1);
+    await sleep(CHAR_DELAY);
+  }
+  // move to log history
+  const p = document.createElement('p');
+  p.className = 'line show';
+  p.innerHTML = entry.prefix + entry.text + '<span class="complete"> Complete</span>';
+  linesContainer.appendChild(p);
+  if (linesContainer.children.length > MAX_LOGS){
+    linesContainer.removeChild(linesContainer.firstElementChild);
+  }
+  promptText.textContent = '';
+  finishedLines++;
+  progressBar.style.width = Math.round((finishedLines/logs.length)*90) + '%';
+}
+
+async function startLoading(){
+  finishedLines=0;
+  progressBar.style.width='0%';
+  spinner.style.display='';
+  openLink.style.display='none';
+  linesContainer.innerHTML='';
+  await sleep(260);
+  for (let i=0;i<logs.length;i++){
+    await typeLine(logs[i]);
+    await sleep(randBetween(BETWEEN_MIN,BETWEEN_MAX));
+  }
+  progressBar.style.width='100%';
+  setTimeout(()=>{
+    spinner.style.display='none';
+    openLink.style.display='inline-block';
+  },420);
+}
+
+loginBtn.addEventListener('click',()=>{
+  screen1.style.opacity=0;
+  setTimeout(()=>{
     screen1.classList.remove('active');
     screen2.classList.add('active');
-    screen2.style.opacity = 1;
+    screen2.style.opacity=1;
     startLoading();
-  }, 800);
+  },650);
 });
-
-function startLoading(){
-  let progress = 0;
-  let currentLine = 0;
-  const totalLines = logLines.length;
-
-  function showLine(line){
-    line.classList.add('visible','typing');
-    setTimeout(()=>{ line.classList.remove('typing'); }, 1000);
-  }
-
-  function markComplete(line){
-    if(line.innerHTML.includes("...")){
-      line.innerHTML = line.innerHTML.replace("...", " <span class='complete'>Complete</span>");
-    }
-  }
-
-  const interval = setInterval(()=>{
-    if(progress >= 100){
-      clearInterval(interval);
-      spinner.style.display = 'none';
-      openLink.style.display = 'inline-block';
-      return;
-    }
-
-    
-    progress += 2; 
-    progressBar.style.width = progress + "%";
-
-    
-    if(currentLine < totalLines && Math.random() > 0.4){
-      const line = logLines[currentLine];
-      showLine(line);
-      setTimeout(()=>{ markComplete(line); }, 1000);
-      currentLine++;
-    }
-
-    
-    if(document.getElementById("logArea").children.length > totalLines){
-      logLines[0].remove();
-    }
-
-  }, 600); 
-}
 </script>
-
 </body>
 </html>
